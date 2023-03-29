@@ -39,12 +39,14 @@ async function fetchImages({
         `${url}&image_type=${imageType}&orientation=${imageOrientation}&safesearch=${safeSearch}&page=${page}&per_page=${perPage}&q=${searchItem}`
       )
       .then(result => {
-        console.log(result.data.totalHits <= page * result.data.hits.length);
+        console.log(result.data.hits);
         if (result.data.totalHits <= 0) {
           data.status = 404;
           throw new Error(
             'Sorry, there are no images matching your search query. Please try again.'
           );
+        } else if (result.data.hits.length < perPage) {
+          data.perPage = result.data.hits.length;
         } else if (result.data.totalHits <= page * result.data.hits.length) {
           data.status = 404;
           throw new Error(
