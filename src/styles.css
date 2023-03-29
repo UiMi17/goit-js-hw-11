@@ -1,0 +1,157 @@
+/* Reset */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul,
+ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+button {
+  font: inherit;
+  border: none;
+  padding: 0;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60px;
+  background-color: #005b96;
+  z-index: 1000;
+}
+
+.finder-box {
+  position: relative;
+  width: 290px;
+  height: 40px;
+}
+
+.finder-box__field {
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+  padding-left: 15px;
+  padding-right: 35px;
+  border: #03396c solid 5px;
+  border-radius: 4px;
+  outline: none;
+}
+
+.finder-box__search-btn {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 50%;
+  right: 5px;
+  width: 30px;
+  height: 30px;
+  background-color: rgb(231, 239, 246);
+  transform: translateY(-50%);
+  border: transparent;
+  outline: none;
+}
+
+.finder-box__search-btn:disabled {
+  cursor: default;
+  background-color: rgba(231, 239, 246, 0.1);
+}
+
+.icon-search {
+  fill: rgb(5, 30, 62);
+}
+
+.finder-box__search-btn:disabled .icon-search {
+  fill: rgba(5, 30, 62, 0.1);
+}
+
+.gallery {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding: 20px 15px 0 15px;
+}
+
+.photo-card {
+  display: flex;
+  flex-direction: column;
+  width: 330px;
+  height: 260px;
+}
+
+.photo-card:hover .info {
+  border-color: transparent;
+  box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;
+}
+
+.photo-card > img {
+  height: 200px;
+}
+
+.photo-card > .info {
+  display: flex;
+  gap: 14px;
+  padding: 10px;
+  border: solid rgb(38, 57, 77, 0.2) 1px;
+  transition: box-shadow 500ms linear;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-weight: 700;
+}
+
+.info-item b {
+  font-weight: 400;
+}
+
+.load-more {
+  display: block;
+  width: 170px;
+  height: 45px;
+  margin: 0 auto;
+  margin-top: 20px;
+  color: whitesmoke;
+  background-color: #03396c;
+  border-radius: 4px;
+  transition: background-color 300ms linear;
+}
+
+.load-more:hover {
+  background-color: #005b96;
+}
+
+.load-more:disabled {
+  display: none;
+}
