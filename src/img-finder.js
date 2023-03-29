@@ -76,7 +76,6 @@ async function onSubmitClick(ev) {
 
     if (data.status === 404) {
       refs.loadMoreBtn.disabled = true;
-      console.log(data.status);
       data.status = '';
       return;
     }
@@ -95,7 +94,6 @@ async function onSubmitClick(ev) {
 
     if (data.status === 404) {
       refs.loadMoreBtn.disabled = true;
-      console.log(data.status);
       data.status = '';
       return;
     }
@@ -107,7 +105,6 @@ async function onSubmitClick(ev) {
 
   refs.loadMoreBtn.addEventListener('click', onLoadBtnClick);
 
-  console.log(data.page)
 }
 
 async function onLoadBtnClick() {
@@ -117,13 +114,11 @@ async function onLoadBtnClick() {
 
   if (data.status === 404) {
     refs.loadMoreBtn.disabled = true;
-    console.log(data.status);
     data.status = '';
     return;
   }
 
   createGalleryElements(responseData);
-  console.log(data.page)
 }
 
 function createGalleryElements(responseData) {
