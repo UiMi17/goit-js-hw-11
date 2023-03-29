@@ -1,6 +1,7 @@
 import Notiflix from 'notiflix';
 import _, { functionsIn } from 'lodash';
 import axios from 'axios';
+import SimpleLightbox from "simplelightbox";
 
 const token = '34819242-61fdcfe42d1461d5acd80d71b';
 const url = `https://pixabay.com/api/?key=${token}`;
@@ -39,13 +40,17 @@ async function fetchImages({
         `${url}&image_type=${imageType}&orientation=${imageOrientation}&safesearch=${safeSearch}&page=${page}&per_page=${perPage}&q=${searchItem}`
       )
       .then(result => {
-        if (result.data.totalHits <= 0) {
+        if (result.data.totalHits < 3) {
           data.status = 404;
           throw new Error(
             'Sorry, there are no images matching your search query. Please try again.'
           );
         } else if (result.data.hits.length < perPage) {
           data.perPage = result.data.hits.length;
+          data.status = 404;
+          throw new Error(
+            "We're sorry, but you've reached the end of search results."
+          );
         } else if (result.data.totalHits <= page * result.data.hits.length) {
           data.status = 404;
           throw new Error(
