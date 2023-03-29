@@ -39,7 +39,6 @@ async function fetchImages({
         `${url}&image_type=${imageType}&orientation=${imageOrientation}&safesearch=${safeSearch}&page=${page}&per_page=${perPage}&q=${searchItem}`
       )
       .then(result => {
-        console.log(result.data.hits);
         if (result.data.totalHits <= 0) {
           data.status = 404;
           throw new Error(
@@ -102,9 +101,13 @@ async function onSubmitClick(ev) {
   }
 
   refs.loadMoreBtn.addEventListener('click', onLoadBtnClick);
+
+  console.log(data.page)
 }
 
 async function onLoadBtnClick() {
+  data.page += 1;
+
   await fetchImages(data);
 
   if (data.status === 404) {
@@ -114,9 +117,8 @@ async function onLoadBtnClick() {
     return;
   }
 
-  data.page += 1;
-
   createGalleryElements(responseData);
+  console.log(data.page)
 }
 
 function createGalleryElements(responseData) {
