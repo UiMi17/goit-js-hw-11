@@ -89,6 +89,7 @@ async function onSubmitClick(ev) {
     createGalleryElements(responseData);
 
     data.currentSearch += 1;
+    
   } else if (data.searchItem !== refs.form.imgFinder.value) {
     data.page = 1;
     refs.gallery.innerHTML = '';
