@@ -1,8 +1,8 @@
 import Notiflix from 'notiflix';
-import _, { functionsIn } from 'lodash';
+import _, { functionsIn, result } from 'lodash';
 import axios from 'axios';
-import SimpleLightbox from "simplelightbox";
-import "simplelightbox/dist/simple-lightbox.min.css";
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 import Headroom from 'headroom.js';
 
 const token = '34819242-61fdcfe42d1461d5acd80d71b';
@@ -27,12 +27,18 @@ const data = {
   searchItem: '',
 };
 
-const headroom = new Headroom(refs.header)
-headroom.init()
-
 let responseData;
 
-async function fetchImages({
+const gallery = new SimpleLightbox('.photo-card a', {
+  captions: true,
+  captionsData: 'alt',
+  captionDelay: 300,
+});
+
+const headroom = new Headroom(refs.header);
+headroom.init();
+
+function fetchImages({
   imageType,
   imageOrientation,
   safeSearch,
@@ -40,34 +46,9 @@ async function fetchImages({
   perPage,
   searchItem,
 }) {
-  try {
-    await axios
-      .get(
-        `${url}&image_type=${imageType}&orientation=${imageOrientation}&safesearch=${safeSearch}&page=${page}&per_page=${perPage}&q=${searchItem}`
-      )
-      .then(result => {
-        if (result.data.totalHits < 3) {
-          data.status = 404;
-          throw new Error(
-            'Sorry, there are no images matching your search query. Please try again.'
-          );
-        } else if (result.data.hits.length < perPage) {
-          data.perPage = result.data.hits.length;
-          data.status = 404;
-          throw new Error(
-            "We're sorry, but you've reached the end of search results."
-          );
-        } else if (result.data.totalHits <= page * result.data.hits.length) {
-          data.status = 404;
-          throw new Error(
-            "We're sorry, but you've reached the end of search results."
-          );
-        }
-        responseData = result;
-      });
-  } catch (error) {
-    console.log(error)
-  }
+  return axios.get(
+    `${url}&image_type=${imageType}&orientation=${imageOrientation}&safesearch=${safeSearch}&page=${page}&per_page=${perPage}&q=${searchItem}`
+  );
 }
 
 refs.form.addEventListener('submit', onSubmitClick);
@@ -78,17 +59,31 @@ async function onSubmitClick(ev) {
   if (data.currentSearch === 1) {
     data.searchItem = refs.form.imgFinder.value;
 
-    await fetchImages(data);
-
-    if (responseData.data.totalHits !== 0) {
-      Notiflix.Notify.success(`Hooray! We found ${responseData.data.totalHits} images.`)
-      responseData.data.totalHits = 0
-    }
+    await fetchImages(data)
+      .then(response => {
+        if (response.data.totalHits === 0) {
+          throw new Error(
+            'Sorry, there are no images matching your search query. Please try again.'
+          );
+        }
+        responseData = response;
+      })
+      .catch(error => {
+        data.status = 404;
+        Notiflix.Notify.failure(error.message);
+      });
 
     if (data.status === 404) {
       refs.loadMoreBtn.disabled = true;
       data.status = '';
       return;
+    }
+
+    if (responseData.data.totalHits !== 0) {
+      Notiflix.Notify.success(
+        `Hooray! We found ${responseData.data.totalHits} images.`
+      );
+      responseData.data.totalHits = 0;
     }
 
     createGalleryElements(responseData);
@@ -100,11 +95,13 @@ async function onSubmitClick(ev) {
 
     data.searchItem = refs.form.imgFinder.value;
 
-    await fetchImages(data);
+    responseData = await fetchImages(data);
 
     if (responseData.data.totalHits !== 0) {
-      Notiflix.Notify.success(`Hooray! We found ${responseData.data.totalHits} images.`)
-      responseData.data.totalHits = 0
+      Notiflix.Notify.success(
+        `Hooray! We found ${responseData.data.totalHits} images.`
+      );
+      responseData.data.totalHits = 0;
     }
 
     if (data.status === 404) {
@@ -117,13 +114,24 @@ async function onSubmitClick(ev) {
   }
 
   refs.loadMoreBtn.addEventListener('click', onLoadBtnClick);
-
 }
 
 async function onLoadBtnClick() {
   data.page += 1;
 
-  await fetchImages(data);
+  await fetchImages(data)
+    .then(response => {
+      if (response.data.totalHits <= data.page * response.data.hits.length) {
+        console.log('1');
+        throw new Error(
+          "We're sorry, but you've reached the end of search results."
+        );
+      }
+    })
+    .catch(error => {
+      data.status = 404;
+      Notiflix.Notify.failure(error.message);
+    });
 
   if (data.status === 404) {
     refs.loadMoreBtn.disabled = true;
@@ -168,12 +176,7 @@ function createGalleryElements(responseData) {
 
   refs.gallery.insertAdjacentHTML('beforeend', elementsTemplate);
 
-  const gallery = new SimpleLightbox('.photo-card a', {
-    captions: true,
-    captionsData: 'alt',
-    captionDelay: 300,
-  })
-  gallery.refresh()
+  gallery.refresh();
 
-  refs.loadMoreBtn.disabled = false
+  refs.loadMoreBtn.disabled = false;
 }
