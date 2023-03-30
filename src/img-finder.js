@@ -66,8 +66,7 @@ async function fetchImages({
         responseData = result;
       });
   } catch (error) {
-    Notiflix.Notify.failure(error.message);
-  }
+    console.log(error)
 }
 
 refs.form.addEventListener('submit', onSubmitClick);
