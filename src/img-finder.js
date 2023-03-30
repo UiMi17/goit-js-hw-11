@@ -2,6 +2,7 @@ import Notiflix from 'notiflix';
 import _, { functionsIn } from 'lodash';
 import axios from 'axios';
 import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
 
 const token = '34819242-61fdcfe42d1461d5acd80d71b';
 const url = `https://pixabay.com/api/?key=${token}`;
@@ -74,6 +75,11 @@ async function onSubmitClick(ev) {
 
     await fetchImages(data);
 
+    if (responseData.data.totalHits !== 0) {
+      Notiflix.Notify.success(`Hooray! We found ${responseData.data.totalHits} images.`)
+      responseData.data.totalHits = 0
+    }
+
     if (data.status === 404) {
       refs.loadMoreBtn.disabled = true;
       data.status = '';
@@ -82,7 +88,6 @@ async function onSubmitClick(ev) {
 
     createGalleryElements(responseData);
 
-    refs.loadMoreBtn.disabled = false;
     data.currentSearch += 1;
   } else if (data.searchItem !== refs.form.imgFinder.value) {
     data.page = 1;
@@ -92,6 +97,11 @@ async function onSubmitClick(ev) {
 
     await fetchImages(data);
 
+    if (responseData.data.totalHits !== 0) {
+      Notiflix.Notify.success(`Hooray! We found ${responseData.data.totalHits} images.`)
+      responseData.data.totalHits = 0
+    }
+
     if (data.status === 404) {
       refs.loadMoreBtn.disabled = true;
       data.status = '';
@@ -99,8 +109,6 @@ async function onSubmitClick(ev) {
     }
 
     createGalleryElements(responseData);
-
-    refs.loadMoreBtn.disabled = false;
   }
 
   refs.loadMoreBtn.addEventListener('click', onLoadBtnClick);
@@ -127,7 +135,9 @@ function createGalleryElements(responseData) {
     .map(image => {
       return `
     <div class="photo-card">
+    <a class="slb" href="${image.largeImageURL}">
     <img src="${image.webformatURL}" alt="${image.tags}" loading="lazy"/>
+    </a>
     <div class="info">
       <p class="info-item">
       Likes: 
@@ -152,4 +162,13 @@ function createGalleryElements(responseData) {
     .join('');
 
   refs.gallery.insertAdjacentHTML('beforeend', elementsTemplate);
+
+  const gallery = new SimpleLightbox('.photo-card a', {
+    captions: true,
+    captionsData: 'alt',
+    captionDelay: 300,
+  })
+  gallery.refresh()
+
+  refs.loadMoreBtn.disabled = false
 }
