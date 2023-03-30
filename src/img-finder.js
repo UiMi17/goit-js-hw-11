@@ -67,6 +67,7 @@ async function fetchImages({
       });
   } catch (error) {
     console.log(error)
+  }
 }
 
 refs.form.addEventListener('submit', onSubmitClick);
