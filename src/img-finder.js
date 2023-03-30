@@ -1,5 +1,4 @@
 import Notiflix from 'notiflix';
-import _, { functionsIn, result } from 'lodash';
 import axios from 'axios';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
