@@ -16,7 +16,6 @@ const refs = {
 };
 
 const data = {
-  status: '',
   imageType: 'photo',
   imageOrientation: 'horizontal',
   safeSearch: true,
@@ -26,7 +25,7 @@ const data = {
   searchItem: '',
 };
 
-let responseData;
+refs.loadMoreBtn.addEventListener('click', onLoadBtnClick);
 
 const gallery = new SimpleLightbox('.photo-card a', {
   captions: true,
@@ -37,7 +36,7 @@ const gallery = new SimpleLightbox('.photo-card a', {
 const headroom = new Headroom(refs.header);
 headroom.init();
 
-function fetchImages({
+async function fetchImages({
   imageType,
   imageOrientation,
   safeSearch,
@@ -45,9 +44,15 @@ function fetchImages({
   perPage,
   searchItem,
 }) {
-  return axios.get(
+  const { data } = await axios.get(
     `${url}&image_type=${imageType}&orientation=${imageOrientation}&safesearch=${safeSearch}&page=${page}&per_page=${perPage}&q=${searchItem}`
   );
+
+  if (data.totalHits === 0) {
+    throw 'Sorry, there are no images matching your search query. Please try again.';
+  }
+
+  return data;
 }
 
 refs.form.addEventListener('submit', onSubmitClick);
@@ -55,94 +60,68 @@ refs.form.addEventListener('submit', onSubmitClick);
 async function onSubmitClick(ev) {
   ev.preventDefault();
 
-  if (data.currentSearch === 1) {
-    data.searchItem = refs.form.imgFinder.value;
+  try {
+    let response = await fetchImages(data);
 
-    await fetchImages(data)
-      .then(response => {
-        if (response.data.totalHits === 0) {
-          throw new Error(
-            'Sorry, there are no images matching your search query. Please try again.'
-          );
-        }
-        responseData = response;
-      })
-      .catch(error => {
-        data.status = 404;
-        Notiflix.Notify.failure(error.message);
-      });
+    if (data.currentSearch === 1) {
+      data.searchItem = refs.form.imgFinder.value;
 
-    if (data.status === 404) {
-      refs.loadMoreBtn.disabled = true;
-      data.status = '';
-      return;
+      response = await fetchImages(data)
+
+      createGalleryElements(response);
+
+      data.currentSearch += 1;
+
+      if (response.totalHits !== 0) {
+        Notiflix.Notify.success(
+          `Hooray! We found ${response.totalHits} images.`
+        );
+        response.totalHits = 0;
+      }
     }
 
-    if (responseData.data.totalHits !== 0) {
-      Notiflix.Notify.success(
-        `Hooray! We found ${responseData.data.totalHits} images.`
-      );
-      responseData.data.totalHits = 0;
+    if (data.searchItem !== refs.form.imgFinder.value) {
+      data.page = 1;
+      refs.gallery.innerHTML = '';
+
+      data.searchItem = refs.form.imgFinder.value;
+
+      response = await fetchImages(data);
+
+      createGalleryElements(response);
+
+      if (response.totalHits !== 0) {
+        Notiflix.Notify.success(
+          `Hooray! We found ${response.totalHits} images.`
+        );
+        response.totalHits = 0;
+      }
     }
-
-    createGalleryElements(responseData);
-
-    data.currentSearch += 1;
-
-  } else if (data.searchItem !== refs.form.imgFinder.value) {
-    data.page = 1;
-    refs.gallery.innerHTML = '';
-
-    data.searchItem = refs.form.imgFinder.value;
-
-    responseData = await fetchImages(data);
-
-    if (responseData.data.totalHits !== 0) {
-      Notiflix.Notify.success(
-        `Hooray! We found ${responseData.data.totalHits} images.`
-      );
-      responseData.data.totalHits = 0;
-    }
-
-    if (data.status === 404) {
-      refs.loadMoreBtn.disabled = true;
-      data.status = '';
-      return;
-    }
-
-    createGalleryElements(responseData);
+  } catch (error) {
+    refs.loadMoreBtn.disabled = true;
+    Notiflix.Notify.failure(error);
   }
-
-  refs.loadMoreBtn.addEventListener('click', onLoadBtnClick);
 }
 
 async function onLoadBtnClick() {
-  data.page += 1;
+  try {
+    const response = await fetchImages(data);
 
-  await fetchImages(data)
-    .then(response => {
-      if (response.data.totalHits <= data.page * response.data.hits.length) {
-        throw new Error(
-          "We're sorry, but you've reached the end of search results."
-        );
-      }
-    })
-    .catch(error => {
-      data.status = 404;
-      Notiflix.Notify.failure(error.message);
-    });
-
-  if (data.status === 404) {
+    if (response.totalHits <= data.page * response.hits.length) {
+      throw (
+        "We're sorry, but you've reached the end of search results."
+      );
+    }
+    data.page += 1;
+    createGalleryElements(response);
+  } catch (error) {
     refs.loadMoreBtn.disabled = true;
-    data.status = '';
-    return;
+    Notiflix.Notify.failure(error);
   }
-
-  createGalleryElements(responseData);
 }
 
 function createGalleryElements(responseData) {
-  const imagesArr = responseData.data.hits;
+  const imagesArr = responseData.hits;
   const elementsTemplate = imagesArr
     .map(image => {
       return `
