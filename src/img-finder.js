@@ -3,11 +3,13 @@ import _, { functionsIn } from 'lodash';
 import axios from 'axios';
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
+import Headroom from 'headroom.js';
 
 const token = '34819242-61fdcfe42d1461d5acd80d71b';
 const url = `https://pixabay.com/api/?key=${token}`;
 
 const refs = {
+  header: document.querySelector('header'),
   form: document.querySelector('.finder-box'),
   gallery: document.querySelector('.gallery'),
   loadMoreBtn: document.querySelector('.load-more'),
@@ -24,6 +26,9 @@ const data = {
   currentSearch: 1,
   searchItem: '',
 };
+
+const headroom = new Headroom(refs.header)
+headroom.init()
 
 let responseData;
 

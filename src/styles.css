@@ -38,12 +38,18 @@ p {
 }
 
 header {
+  position: fixed;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100vw;
   height: 60px;
   background-color: #005b96;
   z-index: 1000;
+}
+
+main {
+  padding-top: 60px;
 }
 
 .finder-box {
