@@ -89,7 +89,7 @@ async function onSubmitClick(ev) {
     createGalleryElements(responseData);
 
     data.currentSearch += 1;
-    
+
   } else if (data.searchItem !== refs.form.imgFinder.value) {
     data.page = 1;
     refs.gallery.innerHTML = '';
@@ -123,7 +123,6 @@ async function onLoadBtnClick() {
   await fetchImages(data)
     .then(response => {
       if (response.data.totalHits <= data.page * response.data.hits.length) {
-        console.log('1');
         throw new Error(
           "We're sorry, but you've reached the end of search results."
         );
