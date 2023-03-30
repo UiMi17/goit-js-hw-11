@@ -21,7 +21,6 @@ const data = {
   safeSearch: true,
   page: 1,
   perPage: 40,
-  currentSearch: 1,
   searchItem: '',
 };
 
@@ -60,44 +59,30 @@ refs.form.addEventListener('submit', onSubmitClick);
 async function onSubmitClick(ev) {
   ev.preventDefault();
 
+  if (data.searchItem === refs.form.imgFinder.value) {
+    return;
+  }
+
   try {
-    let response = await fetchImages(data);
+    data.page = 1;
 
-    if (data.currentSearch === 1) {
-      data.searchItem = refs.form.imgFinder.value;
+    data.searchItem = refs.form.imgFinder.value;
 
-      response = await fetchImages(data)
+    const response = await fetchImages(data);
 
-      createGalleryElements(response);
-
-      data.currentSearch += 1;
-
-      if (response.totalHits !== 0) {
-        Notiflix.Notify.success(
-          `Hooray! We found ${response.totalHits} images.`
-        );
-        response.totalHits = 0;
-      }
+    if (response.totalHits <= data.page * data.perPage) {
+      refs.loadMoreBtn.disabled = true;
+    } else {
+      refs.loadMoreBtn.disabled = false;
     }
 
-    if (data.searchItem !== refs.form.imgFinder.value) {
-      data.page = 1;
+    if (response.totalHits !== 0) {
       refs.gallery.innerHTML = '';
-
-      data.searchItem = refs.form.imgFinder.value;
-
-      response = await fetchImages(data);
-
       createGalleryElements(response);
-
-      if (response.totalHits !== 0) {
-        Notiflix.Notify.success(
-          `Hooray! We found ${response.totalHits} images.`
-        );
-        response.totalHits = 0;
-      }
+      Notiflix.Notify.success(`Hooray! We found ${response.totalHits} images.`);
     }
   } catch (error) {
+    data.searchItem = '';
     refs.loadMoreBtn.disabled = true;
     Notiflix.Notify.failure(error);
   }
@@ -105,14 +90,12 @@ async function onSubmitClick(ev) {
 
 async function onLoadBtnClick() {
   try {
+    data.page += 1;
     const response = await fetchImages(data);
 
     if (response.totalHits <= data.page * response.hits.length) {
-      throw (
-        "We're sorry, but you've reached the end of search results."
-      );
+      throw "We're sorry, but you've reached the end of search results.";
     }
-    data.page += 1;
     createGalleryElements(response);
   } catch (error) {
     refs.loadMoreBtn.disabled = true;
@@ -155,6 +138,4 @@ function createGalleryElements(responseData) {
   refs.gallery.insertAdjacentHTML('beforeend', elementsTemplate);
 
   gallery.refresh();
-
-  refs.loadMoreBtn.disabled = false;
 }
